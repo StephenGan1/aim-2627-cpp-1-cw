@@ -18,7 +18,59 @@ namespace aim::q6 {
 struct Target { int id; int x; int y; int hp; bool visible; };
 
 // BEGIN IMPLEMENTATION
-int select_target(const std::vector<Target>& targets, int max_range) { throw std::runtime_error("TODO"); }
+// aim-cpp-cw-known
+
+int select_target(
+    const std::vector<Target>& targets,
+    int max_range
+) {
+    if (max_range < 0) {
+        return -1;
+    }
+
+    bool found = false;
+
+    int best_id = -1;
+    int best_hp = 0;
+    long long best_dist = 0;
+
+    long long range_sq =
+        static_cast<long long>(max_range) * max_range;
+
+    for (const auto& target : targets) {
+
+        // 筛选不符合条件的目标
+        if (!target.visible || target.hp <= 0) {
+            continue;
+        }
+
+        // 计算欧氏距离的平方
+        long long x = target.x;
+        long long y = target.y;
+
+        long long dist = x * x + y * y;
+
+        if (dist > range_sq) {
+            continue;
+        }
+
+        // 按照优先级选择
+        if (!found ||
+            target.hp < best_hp ||
+            (target.hp == best_hp &&
+             (dist < best_dist ||
+              (dist == best_dist && target.id < best_id)))) {
+
+            found = true;
+            best_id = target.id;
+            best_hp = target.hp;
+            best_dist = dist;
+        }
+    }
+
+    return found ? best_id : -1;
+}
+
 // END IMPLEMENTATION
 }
 

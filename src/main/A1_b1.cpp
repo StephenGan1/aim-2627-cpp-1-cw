@@ -18,7 +18,56 @@ namespace aim::b1 {
 
 
 // BEGIN IMPLEMENTATION
-bool parse_i32(const std::string& text, int& output) { throw std::runtime_error("TODO"); }
+// aim-cpp-cw-known
+
+ // aim-cpp-cw
+bool parse_i32(const std::string& text, int& output) {
+    if (text.empty() || text.size() > 1000) {
+        return false;
+    }
+
+    std::size_t i = 0;
+    bool negative = false;
+
+    if (text[i] == '+' || text[i] == '-') {
+        negative = (text[i] == '-');
+        ++i;
+    }
+
+    if (i == text.size()) {
+        return false;
+    }
+
+    unsigned long long limit =
+        negative ? 2147483648ULL : 2147483647ULL;
+
+    unsigned long long value = 0;
+
+    for (; i < text.size(); ++i) {
+        char ch = text[i];
+
+        if (ch < '0' || ch > '9') {
+            return false;
+        }
+
+        unsigned long long digit = ch - '0';
+
+        // 在乘法和加法之前检查溢出
+        if (value > (limit - digit) / 10ULL) {
+            return false;
+        }
+
+        value = value * 10ULL + digit;
+    }
+
+    long long result = negative
+        ? -static_cast<long long>(value)
+        : static_cast<long long>(value);
+
+    output = static_cast<int>(result);
+    return true;
+}
+
 // END IMPLEMENTATION
 }
 

@@ -19,7 +19,59 @@ struct Telemetry { int id; int hp; };
 struct Summary { int valid; int duplicate; int invalid; long long total_hp; std::vector<int> ids; };
 
 // BEGIN IMPLEMENTATION
-Summary summarize(const std::vector<Telemetry>& frames) { throw std::runtime_error("TODO"); }
+// aim-cpp-cw-known
+
+Summary summarize(const std::vector<Telemetry>& frames) {
+    int valid = 0;
+    int duplicate = 0;
+    int invalid = 0;
+    long long total_hp = 0;
+
+    // 编号范围为 0~9999
+    std::vector<bool> seen(10000, false);
+
+    for (const auto& frame : frames) {
+
+        // 第一步：验证数据范围
+        if (frame.id < 0 || frame.id > 9999 ||
+            frame.hp < -1000 || frame.hp > 1000) {
+            ++invalid;
+            continue;
+        }
+
+        // 第二步：检查重复
+        if (seen[frame.id]) {
+            ++duplicate;
+            continue;
+        }
+
+        // 第三步：首次合法记录
+        seen[frame.id] = true;
+        ++valid;
+
+        // 血量限制到 0~100
+        int hp = std::clamp(frame.hp, 0, 100);
+        total_hp += hp;
+    }
+
+    // 第四步：按照编号升序生成结果
+    std::vector<int> ids;
+
+    for (int id = 0; id < 10000; ++id) {
+        if (seen[id]) {
+            ids.push_back(id);
+        }
+    }
+
+    return Summary{
+        valid,
+        duplicate,
+        invalid,
+        total_hp,
+        ids
+    };
+}
+
 // END IMPLEMENTATION
 }
 
